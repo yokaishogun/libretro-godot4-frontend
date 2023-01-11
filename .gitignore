@@ -1,6 +1,7 @@
 # Godot 4+ specific ignores
 .godot/
-game/bin/summator/*
+project/bin
+project/addons/*/bin
 .sconsign*.dblite
 
 # Binaries

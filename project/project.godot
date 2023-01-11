@@ -10,7 +10,18 @@ config_version=5
 
 [application]
 
-config/name="GDExtensionSummator"
+config/name="libretro-godot4-frontend"
 run/main_scene="res://main.tscn"
 config/features=PackedStringArray("4.0")
 config/icon="res://icon.png"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=800
+window/size/resizable=false
+
+[editor]
+
+node_naming/name_num_separator=2
+node_naming/name_casing=2

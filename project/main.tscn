@@ -1,0 +1,63 @@
+[gd_scene load_steps=2 format=3 uid="uid://dgm4ah3j8jxke"]
+
+[ext_resource type="Script" path="res://main.gd" id="1_ptcg0"]
+
+[node name="main" type="Node"]
+script = ExtResource("1_ptcg0")
+
+[node name="file_dialog" type="FileDialog" parent="."]
+title = "Load Core"
+position = Vector2i(380, 114)
+size = Vector2i(521, 572)
+always_on_top = true
+min_size = Vector2i(521, 300)
+mode_overrides_title = false
+file_mode = 0
+access = 2
+root_subfolder = "/usr/lib/libretro"
+
+[node name="ui_canvas_layer" type="CanvasLayer" parent="."]
+follow_viewport_enabled = true
+
+[node name="ui" type="Control" parent="ui_canvas_layer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="button" type="Button" parent="ui_canvas_layer/ui"]
+custom_minimum_size = Vector2(128, 64)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -64.0
+offset_top = -80.0
+offset_right = 64.0
+offset_bottom = -16.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "LOAD CORE"
+
+[node name="label" type="Label" parent="ui_canvas_layer/ui"]
+custom_minimum_size = Vector2(256, 64)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -128.0
+offset_top = 16.0
+offset_right = 128.0
+offset_bottom = 80.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_alignment = 1
+
+[connection signal="file_selected" from="file_dialog" to="." method="_on_file_dialog_file_selected"]
+[connection signal="pressed" from="ui_canvas_layer/ui/button" to="." method="_on_button_pressed"]

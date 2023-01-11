@@ -17,16 +17,16 @@ env.Append(CPPPATH=["extension/src/"])
 sources = Glob("extension/src/*.cpp")
 
 if env["platform"] == "macos":
-    library = env.SharedLibrary(
-        "game/bin/summator/libgdsummator.{}.{}.framework/libgdsummator.{}.{}".format(
-            env["platform"], env["target"], env["platform"], env["target"]
-        ),
-        source=sources,
-    )
+  library = env.SharedLibrary(
+    "project/addons/gdretro/bin/libgdretro.{}.{}.framework/libgdretro.{}.{}".format(
+      env["platform"], env["target"], env["platform"], env["target"]
+    ),
+    source=sources,
+  )
 else:
-    library = env.SharedLibrary(
-        "game/bin/summator/libgdsummator{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
-        source=sources,
-    )
+  library = env.SharedLibrary(
+    "project/addons/gdretro/bin/libgdretro{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
+    source=sources,
+  )
 
 Default(library)
