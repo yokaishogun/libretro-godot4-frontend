@@ -1,0 +1,12 @@
+{
+  "files.associations": {
+    "*.yml": "ansible",
+    "*.tcc": "cpp",
+    "memory": "cpp",
+    "istream": "cpp",
+    "sstream": "cpp",
+    "tuple": "cpp",
+    "valarray": "cpp",
+    "*.inc": "cpp"
+  }
+}

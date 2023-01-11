@@ -3,8 +3,8 @@
 #include <godot_cpp/variant/utility_functions.hpp>
 #include <stdio.h>
 #include <stdlib.h>
+#include<stdarg.h>
 #include <dlfcn.h>
-#include "libretro.h"
 #include "gdretro.h"
 
 using namespace godot;
@@ -35,18 +35,28 @@ GDRetro::~GDRetro() {
   core_unload();
 }
 
-void GDRetro::core_load(String p_sofile) {
-  extern void retro_init(void);
-  extern void retro_deinit(void);
-  extern unsigned int retro_api_version(void);
-  extern void retro_get_system_info(struct retro_system_info *info);
-  extern void retro_get_system_av_info(struct retro_system_av_info *info);
-  extern void retro_set_controller_port_device(unsigned port, unsigned device);
-  extern void retro_reset(void);
-  extern void retro_run(void);
-  extern bool retro_load_game(const struct retro_game_info *game);
-  extern void retro_unload_game(void);
+void GDRetro::core_log(enum retro_log_level level, const char *fmt, ...) {
+  char buffer[4096] = {0};
+  static const char * levelstr[] = { "dbg", "inf", "wrn", "err" };
+  va_list va;
   
+  va_start(va, fmt);
+  vsnprintf(buffer, sizeof(buffer), fmt, va);
+  va_end(va);
+  
+  if (level == 0){
+    return;
+  }
+  
+  fprintf(stderr, "[%s] %s", levelstr[level], buffer);
+  fflush(stderr);
+
+  if (level == RETRO_LOG_ERROR){
+    exit(EXIT_FAILURE);
+  }
+}
+
+void GDRetro::core_load(String p_sofile) {
   void (*set_environment)(retro_environment_t) = NULL;
   void (*set_video_refresh)(retro_video_refresh_t) = NULL;
   void (*set_input_poll)(retro_input_poll_t) = NULL;
@@ -54,25 +64,26 @@ void GDRetro::core_load(String p_sofile) {
   void (*set_audio_sample)(retro_audio_sample_t) = NULL;
   void (*set_audio_sample_batch)(retro_audio_sample_batch_t) = NULL;
   
-  handle = load_dynamic_object(p_sofile.utf8().get_data());
+  retro_core *g_retro, __g_retro;
+  g_retro = &__g_retro;
   
-  load_sym(handle, (*this).retro_init, retro_init);
-  load_sym(handle, (*this).retro_deinit, retro_deinit);
-  load_sym(handle, (*this).retro_api_version, retro_api_version);
-  load_sym(handle, (*this).retro_get_system_info, retro_get_system_info);
-  load_sym(handle, (*this).retro_get_system_av_info, retro_get_system_av_info);
-  load_sym(handle, (*this).retro_set_controller_port_device, retro_set_controller_port_device);
-  load_sym(handle, (*this).retro_reset, retro_reset);
-  load_sym(handle, (*this).retro_run, retro_run);
-  load_sym(handle, (*this).retro_load_game, retro_load_game);
-  load_sym(handle, (*this).retro_unload_game, retro_unload_game);
+  load_sym(g_retro->handle, g_retro->retro_init, retro_init);
+  load_sym(g_retro->handle, g_retro->retro_deinit, retro_deinit);
+  load_sym(g_retro->handle, g_retro->retro_api_version, retro_api_version);
+  load_sym(g_retro->handle, g_retro->retro_get_system_info, retro_get_system_info);
+  load_sym(g_retro->handle, g_retro->retro_get_system_av_info, retro_get_system_av_info);
+  load_sym(g_retro->handle, g_retro->retro_set_controller_port_device, retro_set_controller_port_device);
+  load_sym(g_retro->handle, g_retro->retro_reset, retro_reset);
+  load_sym(g_retro->handle, g_retro->retro_run, retro_run);
+  load_sym(g_retro->handle, g_retro->retro_load_game, retro_load_game);
+  load_sym(g_retro->handle, g_retro->retro_unload_game, retro_unload_game);
   
-  load_sym(handle, set_environment, retro_set_environment);
-  load_sym(handle, set_video_refresh, retro_set_video_refresh);
-  load_sym(handle, set_input_poll, retro_set_input_poll);
-  load_sym(handle, set_input_state, retro_set_input_state);
-  load_sym(handle, set_audio_sample, retro_set_audio_sample);
-  load_sym(handle, set_audio_sample_batch, retro_set_audio_sample_batch);
+  load_sym(g_retro->handle, set_environment, retro_set_environment);
+  load_sym(g_retro->handle, set_video_refresh, retro_set_video_refresh);
+  load_sym(g_retro->handle, set_input_poll, retro_set_input_poll);
+  load_sym(g_retro->handle, set_input_state, retro_set_input_state);
+  load_sym(g_retro->handle, set_audio_sample, retro_set_audio_sample);
+  load_sym(g_retro->handle, set_audio_sample_batch, retro_set_audio_sample_batch);
   
   /*set_environment(core_environment);
   set_video_refresh(core_video_refresh);
@@ -82,34 +93,61 @@ void GDRetro::core_load(String p_sofile) {
   set_audio_sample_batch(core_audio_sample_batch);
   
   (*this).retro_init();*/
-  initialized = true;
+  g_retro->initialized = true;
+}
+
+void GDRetro::core_load_game(String p_filename) {
   
-  retro_system_info system_info;
-  (*this).retro_get_system_info(&system_info);
-  
-  char print_string[128];
-  snprintf(print_string, 128, "gdretro: core loaded %s %s",
-    system_info.library_name,
-    system_info.library_version
-  );
-  UtilityFunctions::print(print_string);
 }
 
 void GDRetro::core_unload() {
-  dlclose(handle);
+  if (g_retro && g_retro->initialized) {
+    //retro_deinit();
+    g_retro->initialized = false;
+  }
+  
+  if (g_retro && g_retro->handle) {
+    dlclose(g_retro->handle);
+  }
 }
 
 unsigned GDRetro::bind_retro_api_version() {
-  return retro_api_version();
+  if (!g_retro) { return -1; }
+  return g_retro->retro_api_version();
 }
 
 bool GDRetro::bind_is_initialized() {
-  return initialized;
+  if (!g_retro) { return false; }
+  return g_retro->initialized;
 }
 
-Dictionary GDRetro::bind_retro_get_system_info() {
-  retro_system_info system_info;
-  (*this).retro_get_system_info(&system_info);
+void GDRetro::bind_retro_reset() {
+  if (!g_retro) { return; }
+  g_retro->retro_reset();
+}
+
+void GDRetro::bind_retro_run() {
+  if (!g_retro) { return; }
+  g_retro->retro_run();
+}
+
+void GDRetro::bind_retro_unload_game() {
+  if (!g_retro) { return; }
+  g_retro->retro_unload_game();
+}
+
+void GDRetro::bind_retro_set_controller_port_device(unsigned port, unsigned device) {
+  if (!g_retro) { return; }
+  g_retro->retro_set_controller_port_device(port, device);
+}
+
+Variant GDRetro::bind_retro_get_system_info() {
+  if (!g_retro || !g_retro->initialized) {
+    return Variant();
+  }
+  
+  retro_system_info system_info = {0};
+  g_retro->retro_get_system_info(&system_info);
   
   Dictionary system_info_dict = Dictionary();
   system_info_dict["library_name"] = system_info.library_name;
@@ -120,9 +158,13 @@ Dictionary GDRetro::bind_retro_get_system_info() {
   return system_info_dict;
 }
 
-Dictionary GDRetro::bind_retro_get_system_av_info() {
+Variant GDRetro::bind_retro_get_system_av_info() {
+  if (!g_retro || !g_retro->initialized) {
+    return Variant();
+  }
+  
   retro_system_av_info system_av_info;
-  (*this).retro_get_system_av_info(&system_av_info);
+  g_retro->retro_get_system_av_info(&system_av_info);
   
   Dictionary system_av_info_geometry_dict = Dictionary();
   system_av_info_geometry_dict["aspect_ratio"] = system_av_info.geometry.aspect_ratio;
@@ -142,11 +184,22 @@ Dictionary GDRetro::bind_retro_get_system_av_info() {
   return system_av_info_dict;
 }
 
+void GDRetro::_ready() {
+  
+}
+
+void GDRetro::_process(double delta) {
+  
+}
+
 void GDRetro::_bind_methods() {
   ClassDB::bind_method(D_METHOD("core_load"), &GDRetro::core_load);
+  ClassDB::bind_method(D_METHOD("core_load_game"), &GDRetro::core_load_game);
   ClassDB::bind_method(D_METHOD("core_unload"), &GDRetro::core_unload);
   ClassDB::bind_method(D_METHOD("retro_api_version"), &GDRetro::bind_retro_api_version);
   ClassDB::bind_method(D_METHOD("retro_get_system_info"), &GDRetro::bind_retro_get_system_info);
   ClassDB::bind_method(D_METHOD("retro_get_system_av_info"), &GDRetro::bind_retro_get_system_av_info);
   ClassDB::bind_method(D_METHOD("is_initialized"), &GDRetro::bind_is_initialized);
+  ClassDB::bind_method(D_METHOD("retro_reset"), &GDRetro::bind_retro_reset);
+  ClassDB::bind_method(D_METHOD("retro_run"), &GDRetro::bind_retro_run);
 }
