@@ -1,16 +1,21 @@
-[gd_scene load_steps=2 format=3 uid="uid://biu372d1aoqwy"]
+[gd_scene load_steps=4 format=3 uid="uid://biu372d1aoqwy"]
 
 [ext_resource type="Script" path="res://main.gd" id="1_swau4"]
+[ext_resource type="Texture2D" uid="uid://cx1mscuegq1lo" path="res://icon.png" id="2_uh3hw"]
+
+[sub_resource type="ImageTexture" id="ImageTexture_af8hy"]
 
 [node name="main" type="Node"]
 script = ExtResource("1_swau4")
 
 [node name="gd_retro" type="GDRetro" parent="."]
+texture = ExtResource("2_uh3hw")
+position = Vector2(400, 150)
 
 [node name="file_dialog_core" type="FileDialog" parent="."]
 title = "Load Core"
-position = Vector2i(340, 100)
-size = Vector2i(600, 600)
+position = Vector2i(139, 55)
+size = Vector2i(521, 521)
 ok_button_text = "Open"
 mode_overrides_title = false
 file_mode = 0
@@ -19,9 +24,9 @@ root_subfolder = "/usr/lib/libretro"
 filters = PackedStringArray("*_libretro.so*")
 
 [node name="file_dialog_game" type="FileDialog" parent="."]
-title = "Load Core"
-position = Vector2i(340, 100)
-size = Vector2i(600, 600)
+title = "Load Game"
+position = Vector2i(139, 55)
+size = Vector2i(521, 521)
 ok_button_text = "Open"
 mode_overrides_title = false
 file_mode = 0
@@ -38,51 +43,97 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="buttons_container" type="HBoxContainer" parent="ui_canvas_layer/ui"]
-custom_minimum_size = Vector2(272, 64)
+[node name="buttons_container_left" type="VBoxContainer" parent="ui_canvas_layer/ui"]
+custom_minimum_size = Vector2(128, 64)
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -136.0
-offset_top = -32.0
-offset_right = 136.0
-offset_bottom = 32.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_left = 32.0
+offset_top = 32.0
+offset_right = 160.0
+offset_bottom = 256.0
 theme_override_constants/separation = 16
 alignment = 1
 
-[node name="button_core" type="Button" parent="ui_canvas_layer/ui/buttons_container"]
+[node name="button_core" type="Button" parent="ui_canvas_layer/ui/buttons_container_left"]
 custom_minimum_size = Vector2(128, 64)
 layout_mode = 2
 text = "LOAD CORE"
 
-[node name="button_game" type="Button" parent="ui_canvas_layer/ui/buttons_container"]
+[node name="button_game" type="Button" parent="ui_canvas_layer/ui/buttons_container_left"]
 custom_minimum_size = Vector2(128, 64)
 layout_mode = 2
 disabled = true
 text = "LOAD GAME"
 
-[node name="label" type="Label" parent="ui_canvas_layer/ui"]
-custom_minimum_size = Vector2(768, 256)
+[node name="button_run" type="Button" parent="ui_canvas_layer/ui/buttons_container_left"]
+custom_minimum_size = Vector2(128, 64)
+layout_mode = 2
+disabled = true
+toggle_mode = true
+text = "RUN"
+
+[node name="buttons_container_right" type="HBoxContainer" parent="ui_canvas_layer/ui"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -96.0
+offset_top = 32.0
+offset_right = -32.0
+offset_bottom = 96.0
+grow_horizontal = 0
+theme_override_constants/separation = 16
+alignment = 2
+
+[node name="button_exit" type="Button" parent="ui_canvas_layer/ui/buttons_container_right"]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+text = "X"
+
+[node name="label_title" type="Label" parent="ui_canvas_layer/ui"]
+custom_minimum_size = Vector2(128, 64)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -384.0
-offset_top = 48.0
-offset_right = 384.0
-offset_bottom = 304.0
+offset_left = -64.0
+offset_top = -32.0
+offset_right = 64.0
+offset_bottom = 32.0
 grow_horizontal = 2
 grow_vertical = 2
+text = "GDRetro"
 horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="label_info" type="Label" parent="ui_canvas_layer/ui"]
+custom_minimum_size = Vector2(768, 26)
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -26.0
+offset_right = -8.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "Core"
+
+[node name="sub_viewport" type="SubViewport" parent="."]
+size = Vector2i(160, 144)
+
+[node name="2d" type="Node2D" parent="."]
+
+[node name="sprite_2d" type="Sprite2D" parent="2d"]
+position = Vector2(400, 300)
+texture = SubResource("ImageTexture_af8hy")
 
 [connection signal="file_selected" from="file_dialog_core" to="." method="_on_file_dialog_core_file_selected"]
 [connection signal="file_selected" from="file_dialog_game" to="." method="_on_file_dialog_game_file_selected"]
-[connection signal="pressed" from="ui_canvas_layer/ui/buttons_container/button_core" to="." method="_on_button_core_pressed"]
-[connection signal="pressed" from="ui_canvas_layer/ui/buttons_container/button_game" to="." method="_on_button_game_pressed"]
+[connection signal="pressed" from="ui_canvas_layer/ui/buttons_container_left/button_core" to="." method="_on_button_core_pressed"]
+[connection signal="pressed" from="ui_canvas_layer/ui/buttons_container_left/button_game" to="." method="_on_button_game_pressed"]
+[connection signal="toggled" from="ui_canvas_layer/ui/buttons_container_left/button_run" to="." method="_on_button_run_toggled"]
+[connection signal="pressed" from="ui_canvas_layer/ui/buttons_container_right/button_exit" to="." method="_on_button_exit_pressed"]
